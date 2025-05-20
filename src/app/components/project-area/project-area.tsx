@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import ProjectsAreaHeader from "./project-area-header/project-area-header";
 import ProjectAreaTasksBoard from "./project-area-tasks-board/project-area-boards";
-import { Board,Task } from "./project-area-tasks-board/types/kanban";
+import { Board, Task } from "./project-area-tasks-board/types/kanban";
 import TaskDialog from "../window-dialogs/task-dialogs/task-dialog";
+import RightSideBar from "../right-side-bar/right-side-bar";
 
 export default function ProjectArea() {
   const [boards, setBoards] = useState<Board[]>([
@@ -47,9 +48,9 @@ export default function ProjectArea() {
       ...task,
       id: crypto.randomUUID(), // ✅ generate unique ID here
     };
-  
-    setBoards(prevBoards =>
-      prevBoards.map(board =>
+
+    setBoards((prevBoards) =>
+      prevBoards.map((board) =>
         board.name === "Yet To Start"
           ? { ...board, tasks: [...board.tasks, newTask] }
           : board
@@ -59,44 +60,55 @@ export default function ProjectArea() {
 
   const handleUpdateTask = (updatedTask: Task) => {
     if (!taskBeingEdited) return;
-  
-    setBoards(prevBoards => {
+
+    setBoards((prevBoards) => {
       const updatedBoards = [...prevBoards];
-  
+
       // Remove from old board
-      updatedBoards[taskBeingEdited.boardIndex].tasks.splice(taskBeingEdited.taskIndex, 1);
-  
+      updatedBoards[taskBeingEdited.boardIndex].tasks.splice(
+        taskBeingEdited.taskIndex,
+        1
+      );
+
       // Add to new board
       const newBoardIndex = updatedBoards.findIndex(
-        board => board.name.toLowerCase() === updatedTask.project.toLowerCase()
+        (board) =>
+          board.name.toLowerCase() === updatedTask.project.toLowerCase()
       );
       if (newBoardIndex !== -1) {
         updatedBoards[newBoardIndex].tasks.push(updatedTask);
       }
-  
+
       return updatedBoards;
     });
-  
+
     setTaskBeingEdited(null);
   };
-  
-  return (
-    <div>
-      <ProjectsAreaHeader onAddTask={handleAddTask} />
-      <ProjectAreaTasksBoard
-  boards={boards}
-  setBoards={setBoards}
-  setTaskBeingEdited={setTaskBeingEdited}
-/>
 
-      {taskBeingEdited && (
-        <TaskDialog
-          task={taskBeingEdited.task}
-          onSave={handleUpdateTask}
-          onClose={() => setTaskBeingEdited(null)}
-          boards={boards.map(b => b.name)}
+  return (
+    <div className="flex gap-6">
+      {/* Left Area (Board + Header) */}
+      <div className="flex-1">
+        <ProjectsAreaHeader onAddTask={handleAddTask} />
+        <ProjectAreaTasksBoard
+          boards={boards}
+          setBoards={setBoards}
+          setTaskBeingEdited={setTaskBeingEdited}
         />
-      )}
+  
+        {taskBeingEdited && (
+          <TaskDialog
+            task={taskBeingEdited.task}
+            onSave={handleUpdateTask}
+            onClose={() => setTaskBeingEdited(null)}
+            boards={boards.map((b) => b.name)}
+          />
+        )}
+      </div>
+  
+      {/* Right Sidebar with live progress */}
+      <RightSideBar boards={boards} />
     </div>
   );
+  
 }

@@ -15,9 +15,9 @@ export default function Home() {
       <Navbar />
 
       {/* Main content area with Projects and Sidebar */}
-      <div className="grid grid-cols-[3fr_1fr] px-6 mt-8 poppins gap-4">
+      <div className="grid px-6 mt-8 poppins gap-4">
         <ProjectsArea />
-        <RightSideBar />
+     
       </div>
     </div>
   );
