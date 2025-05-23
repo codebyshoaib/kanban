@@ -1,10 +1,9 @@
-// components/nav-bar/nav-bar.tsx
-"use client";
 
+"use client";
 import { Separator } from "@/components/ui/separator";
 import { ModeToggle } from "@/app/mode-toggle";
 import AppNameAndLogo from "./logo-app";
-import SearchBar from "./search-bar";
+
 import ProjectDialog from "../window-dialogs/project-dialogs/new-project-dialog";
 export default function Navbar({
   onAddProject,

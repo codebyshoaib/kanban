@@ -3,28 +3,26 @@
 import TaskDialog from "../../window-dialogs/task-dialogs/task-dialog";
 import { MdOutlineSortByAlpha } from "react-icons/md";
 import { SortingDropDown } from "../../drop-downs/sorting-drop-down";
-import { Project, Task } from "../project-area-tasks-board/types/kanban";
 
 type Props = {
-  projects: Project[];
+  projectName: string;
+  boardNames: string[];
   selectedProjectId: string;
-  onProjectChange: (id: string) => void;
-  onAddTask: (task: Task) => void;
+  onAddTask: (task: any) => void;
 };
 
 export default function ProjectsAreaHeader({
-  projects,
+  projectName,
+  boardNames,
   selectedProjectId,
-  onProjectChange,
   onAddTask,
 }: Props) {
-  const selectedProject = projects.find((p) => p.id === selectedProjectId);
-  const boardNames = selectedProject?.boards.map((b) => b.name) || [];
-
   return (
     <div className="flex justify-between items-center">
       <div className="flex gap-3 items-center">
-        
+        <span className="text-2xl font-bold">
+          {projectName || "Select a project"}
+        </span>
       </div>
 
       <div className="flex items-center gap-2">
