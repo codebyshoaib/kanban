@@ -24,9 +24,7 @@ export default function ProjectsAreaHeader({
   return (
     <div className="flex justify-between items-center">
       <div className="flex gap-3 items-center">
-        <span className="text-2xl font-bold">
-          {selectedProject?.name || "Select a project"}
-        </span>
+        
       </div>
 
       <div className="flex items-center gap-2">

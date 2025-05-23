@@ -1,57 +1,32 @@
+// components/project-area/project-area.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ProjectsAreaHeader from "./project-area-header/project-area-header";
 import ProjectAreaTasksBoard from "./project-area-tasks-board/project-area-boards";
 import TaskDialog from "../window-dialogs/task-dialogs/task-dialog";
 import RightSideBar from "../right-side-bar/right-side-bar";
 import { Project, Task } from "./project-area-tasks-board/types/kanban";
 
-export default function ProjectArea() {
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: "1",
-      name: "Project Name 1",
-      boards: [
-        { name: "Yet To Start", tasks: [] },
-        { name: "In Progress", tasks: [] },
-        { name: "Completed", tasks: [] },
-      ],
-    },
-    {
-      id: "2",
-      name: "Project Name 2",
-      boards: [
-        { name: "Yet To Start", tasks: [] },
-        { name: "In Progress", tasks: [] },
-        { name: "Completed", tasks: [] },
-      ],
-    },
-  ]);
+type Props = {
+  projects: Project[];
+  setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
+  selectedProjectId: string;
+  setSelectedProjectId: (id: string) => void;
+};
 
-  const [selectedProjectId, setSelectedProjectId] = useState("1");
-
+export default function ProjectArea({
+  projects,
+  setProjects,
+  selectedProjectId,
+  setSelectedProjectId,
+}: Props) {
   const [taskBeingEdited, setTaskBeingEdited] = useState<{
     task: Task;
     projectId: string;
     boardIndex: number;
     taskIndex: number;
   } | null>(null);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("kanban-projects");
-    if (saved) {
-      try {
-        setProjects(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to load projects from localStorage:", e);
-      }
-    }
-  }, []);
-
-  // useEffect(() => {
-  //   localStorage.setItem("kanban-projects", JSON.stringify(projects));
-  // }, [projects]);
 
   const handleAddTask = (task: Task) => {
     const newTask = { ...task, id: crypto.randomUUID() };
@@ -101,30 +76,25 @@ export default function ProjectArea() {
   };
 
   const handleDeleteTask = (projectId: string, boardName: string, taskId: string) => {
-    console.log("🚨 DELETE CALLED:", { projectId, boardName, taskId });
-  
-    setProjects((prev) => {
-      return prev.map((project) => {
+    setProjects((prev) =>
+      prev.map((project) => {
         if (project.id !== projectId) return project;
-  
+
         const updatedBoards = project.boards.map((board) => {
-          if (board.name !== boardName) return { ...board }; // ❗ shallow clone anyway
-          const filteredTasks = board.tasks.filter((task) => task.id !== taskId);
+          if (board.name !== boardName) return board;
           return {
             ...board,
-            tasks: [...filteredTasks], // ❗ force new array reference
+            tasks: board.tasks.filter((task) => task.id !== taskId),
           };
         });
-  
+
         return {
           ...project,
-          boards: [...updatedBoards], // ❗ force new boards array
+          boards: updatedBoards,
         };
-      });
-    });
+      })
+    );
   };
-  
-  
 
   const handleDragTask = (taskId: string, projectId: string, targetBoard: string) => {
     setProjects((prev) =>

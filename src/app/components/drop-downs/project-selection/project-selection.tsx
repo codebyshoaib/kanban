@@ -22,18 +22,24 @@ export default function ProjectSelectionDropDown({
   value,
   onChange,
 }: Props) {
-  const selectedProject = projects.find((p) => p.id === value) ?? projects[0];
+  const selectedProject = projects.find((p) => p.id === value) ?? null;
+  const isDisabled = projects.length === 0;
 
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          disabled={isDisabled}
           variant="ghost"
-          className="w-full flex justify-between py-9 rounded-xl bg-gray-50"
+          className={`w-full flex justify-between py-9 rounded-xl ${
+            isDisabled ? "bg-gray-200 cursor-not-allowed" : "bg-gray-50"
+          }`}
         >
           <div className="flex items-start flex-col text-[16px] gap-1">
             <p className="text-[13px] text-slate-500">PROJECT</p>
-            <p className="font-bold">{selectedProject?.name}</p>
+            <p className="font-bold">
+              {isDisabled ? "Add a project" : selectedProject?.name}
+            </p>
           </div>
 
           <div className="size-10 bg-primary rounded-full flex items-center justify-center text-2xl text-white">
@@ -46,13 +52,15 @@ export default function ProjectSelectionDropDown({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="p-2 poppins rounded-xl">
-        <ProjectCommandItems
-          projects={projects}
-          selectedProject={selectedProject}
-          onSelect={onChange}
-        />
-      </PopoverContent>
+      {!isDisabled && (
+        <PopoverContent className="p-2 poppins rounded-xl">
+          <ProjectCommandItems
+            projects={projects}
+            selectedProject={selectedProject}
+            onSelect={onChange}
+          />
+        </PopoverContent>
+      )}
     </Popover>
   );
 }
