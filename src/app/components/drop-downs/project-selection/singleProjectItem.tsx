@@ -4,10 +4,12 @@ import { IoMdCheckmark } from "react-icons/io";
 
 export function SingleProjectCommandItem({
   project,
+  taskCount,
   isSelected,
   onSelectedItem,
 }: {
   project: Project;
+  taskCount: number;
   isSelected: boolean;
   onSelectedItem: (project: Project) => void;
 }) {
@@ -37,7 +39,7 @@ export function SingleProjectCommandItem({
           <div className="flex flex-col">
             <span className="font-medium">{projectName}</span>
             <span className="text-[12px] text-gray-500">
-              {tasks.length} Tasks
+              {taskCount} Tasks
             </span>
           </div>
         </div>

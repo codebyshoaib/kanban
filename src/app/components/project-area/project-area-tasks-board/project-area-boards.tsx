@@ -1,64 +1,66 @@
+"use client";
+
 import SingleBoard from "./single-board";
-import { Board ,Task} from "./types/kanban";
+import { Project, Task } from "./types/kanban";
 import {
   DndContext,
   closestCenter,
   DragEndEvent,
 } from "@dnd-kit/core";
-export default function ProjectsAreaTasksBoard({
-  boards,
+
+type Props = {
+  projects: Project[];
+  setTaskBeingEdited: (data: {
+    task: Task;
+    projectId: string;
+    boardIndex: number;
+    taskIndex: number;
+  }) => void;
+  onTaskDrag: (
+    taskId: string,
+    projectId: string,
+    targetBoard: Task["board"]
+  ) => void;
+  onDeleteTask: (projectId: string, boardName: string, taskId: string) => void; // ✅ FIXED
+};
+
+export default function ProjectAreaTasksBoard({
+  projects,
   setTaskBeingEdited,
-  setBoards,
-}: {
-  boards: Board[];
-  setTaskBeingEdited: any;
-  setBoards: React.Dispatch<React.SetStateAction<Board[]>>;
-}) {
+  onTaskDrag,
+  onDeleteTask,
+}: Props) {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const draggedTaskId = active.id.toString();
-    const targetBoardName = over.id.toString();
+    const [taskId, projectId] = active.id.toString().split(":");
+    const targetBoardName = over.id.toString() as Task["board"];
 
-    setBoards(prevBoards => {
-      const updated = [...prevBoards];
-      let taskToMove: Task | null = null;
-
-      // Remove from source board
-      for (let i = 0; i < updated.length; i++) {
-        const taskIndex = updated[i].tasks.findIndex(t => t.id === draggedTaskId);
-        if (taskIndex !== -1) {
-          taskToMove = updated[i].tasks.splice(taskIndex, 1)[0];
-          break;
-        }
-      }
-
-      if (!taskToMove) return prevBoards;
-
-      // Move to destination
-      const targetBoard = updated.find(b => b.name === targetBoardName);
-      if (targetBoard) {
-        taskToMove.project = targetBoard.name;
-        targetBoard.tasks.push(taskToMove);
-      }
-
-      return updated;
-    });
+    onTaskDrag(taskId, projectId, targetBoardName);
   };
-  
+
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-    <div className="h-full rounded-2xl flex items-center mt-4 gap-3">
-      {boards.map((board, index) => (
-        <SingleBoard
-          key={index}
-          board={board}
-          boardIndex={index}
-          setTaskBeingEdited={setTaskBeingEdited}
-        />
-      ))}
-    </div>
-  </DndContext>
+      <div className="space-y-10 mt-4">
+        {projects.map((project) => (
+          <div key={project.id} className="space-y-3">
+            <div className="flex gap-4">
+              {project.boards.map((board, index) => (
+               <SingleBoard
+               key={`${project.id}-${board.name}`}
+               board={board}
+               boardIndex={index}
+               projectId={project.id}
+               setTaskBeingEdited={(data) => setTaskBeingEdited({ ...data, projectId: project.id })}
+               onDeleteTask={onDeleteTask}
+             />
+             
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </DndContext>
   );
 }

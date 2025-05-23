@@ -12,76 +12,110 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { BiTask } from "react-icons/bi";
+
 import TaskName from "./sub-components/task-name";
 import TaskDescription from "./sub-components/task-description";
 import ProjectsList from "./sub-components/project-list";
+import BoardList from "./sub-components/BoardList";
+
 import PriorityList from "./sub-components/priority-list";
 
-export type Task = {
-  title: string;
-  description: string;
-  project: string;
-  priority: string;
-};
+import { Task } from "../../project-area/project-area-tasks-board/types/kanban";
 
-export default function TaskDialog({
-  onAddTask,
-  onSave,
-  task,
-  onClose,
-  boards = ["Yet To Start", "In Progress", "Completed"]
-}: {
+type Props = {
   onAddTask?: (task: Task) => void;
   onSave?: (task: Task) => void;
   onClose?: () => void;
   task?: Task;
   boards?: string[];
-}) {
+  selectedProjectId?: string;
+};
+
+export default function TaskDialog({
+  onAddTask,
+  onSave,
+  onClose,
+  task,
+  boards = ["Yet To Start", "In Progress", "Completed"],
+  selectedProjectId = "",
+}: Props) {
+  const defaultBoard = boards[0] || "Yet To Start";
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [project, setProject] = useState(boards[0] || "Yet To Start");
+  const [board, setBoard] = useState<Task["board"]>(defaultBoard as Task["board"]);
   const [priority, setPriority] = useState("Low");
   const [open, setOpen] = useState(false);
 
-  // Initialize form fields when editing
   useEffect(() => {
     if (task) {
       setTitle(task.title);
       setDescription(task.description);
-      setProject(task.project);
+      setBoard(task.board);
       setPriority(task.priority);
       setOpen(true);
     }
   }, [task]);
 
   const handleSubmit = () => {
-    if (!title.trim()) return;
+    if (!title.trim() || !selectedProjectId) {
+      console.warn("❌ Missing title or selected project");
+      return;
+    }
 
-    const newTask: Task = { title, description, project, priority };
+    const newTask: Task = {
+      id: task?.id ?? crypto.randomUUID(),
+      title,
+      description,
+      priority,
+      board,
+      projectId: selectedProjectId,
+    };
 
-    if (onSave) {
+    console.log("✅ Task Submitted");
+    console.log("🧾 Title:", title);
+    console.log("📋 Description:", description);
+    console.log("⚡ Priority:", priority);
+    console.log("🗂️ Board:", board);
+    console.log("📁 Project ID:", selectedProjectId);
+    console.log("📦 Full Task Object:", newTask);
+
+    if (task && onSave) {
       onSave(newTask);
     } else if (onAddTask) {
       onAddTask(newTask);
     }
 
-    // Clear & close
-    setTitle("");
-    setDescription("");
-    setProject(boards[0] || "Yet To Start");
-    setPriority("Low");
+    if (!task) {
+      setTitle("");
+      setDescription("");
+      setBoard(defaultBoard as Task["board"]);
+      setPriority("Low");
+    }
+
     setOpen(false);
-    if (onClose) onClose();
+    onClose?.();
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => {
-      setOpen(v);
-      if (!v && onClose) onClose();
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) onClose?.();
+      }}
+    >
       {!task && (
         <DialogTrigger asChild>
-          <Button className="rounded-3xl px-5">Add New Task</Button>
+          <Button
+            className="rounded-3xl px-5"
+            onClick={() => {
+              setOpen(true);
+              console.log("🟢 Dialog opened for Project:", selectedProjectId);
+            }}
+          >
+            Add New Task
+          </Button>
         </DialogTrigger>
       )}
 
@@ -111,13 +145,20 @@ export default function TaskDialog({
           </div>
 
           <div className="flex flex-col gap-[53px]">
-            <ProjectsList value={project} onChange={setProject} boards={boards} />
+          <BoardList
+  value={board}
+  onChange={(val) => setBoard(val as Task["board"])}
+  boards={boards}
+/>
+
             <PriorityList value={priority} onChange={setPriority} />
           </div>
         </div>
 
         <div className="mt-6 flex justify-end">
-          <Button onClick={handleSubmit}>{task ? "Update" : "Save Task"}</Button>
+          <Button onClick={handleSubmit}>
+            {task ? "Update" : "Save Task"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -3,23 +3,26 @@
 import { useTheme } from "next-themes";
 import { useDroppable } from "@dnd-kit/core";
 import SingleTask from "./single-task";
-import { Board,Task } from "./types/kanban";
+import { Board, Task } from "./types/kanban";
 
 export default function SingleBoard({
   board,
   boardIndex,
+  projectId,
   setTaskBeingEdited,
+  onDeleteTask,
 }: {
   board: Board;
   boardIndex: number;
+  projectId: string;
   setTaskBeingEdited: any;
+  onDeleteTask: (projectId: string, boardName: string, taskId: string) => void;
 }) {
   const { name: boardName, tasks } = board;
   const { theme } = useTheme();
   const numberTasks = tasks.length;
   const bgColor = theme === "dark" ? "bg-black" : "bg-gray-100";
 
-  // 👇 Enable this board as a droppable target
   const { setNodeRef, isOver } = useDroppable({
     id: boardName,
   });
@@ -43,20 +46,20 @@ export default function SingleBoard({
 
       {/* Task List */}
       <div className="mt-7">
-        {tasks.map((task, taskIndex) => (
-          <SingleTask
-            key={taskIndex}
-            task={task}
-           dragId={`${boardName}:${task.title}`}// 👈 unique id for dnd-kit
-            onEdit={() =>
-              setTaskBeingEdited({
-                task,
-                boardIndex,
-                taskIndex,
-              })
-            }
-          />
-        ))}
+      {tasks.map((task, taskIndex) => (
+  <SingleTask
+    key={task.id}
+    task={task}
+    onEdit={() =>
+      setTaskBeingEdited({
+        task,
+        boardIndex,
+        taskIndex,
+      })
+    }
+    onDelete={() => onDeleteTask(projectId, boardName, task.id)} // ✅ FIXED HERE
+  />
+))}
       </div>
     </div>
   );
